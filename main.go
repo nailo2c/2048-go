@@ -13,6 +13,7 @@ func main() {
 
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	board := initBoard(boardLen)
+	drawGameField(board)
 }
 
 func initBoard(len int) [][]int {
@@ -21,4 +22,27 @@ func initBoard(len int) [][]int {
 		board[i] = make([]int, len)
 	}
 	return board
+}
+
+func drawGameField(board [][]int) {
+	putNextNumber(board)
+}
+
+func putNextNumber(board [][]int) {
+	emptyCells := findEmptyCells(board)
+	if len(emptyCells) <= 0 {
+		gameOver()
+	}
+}
+
+func findEmptyCells(board [][]int) []int {
+	emptyCells := []int{}
+	for i, row := range board {
+		for j, cell := range row {
+			if cell == 0 {
+				emptyCells = append(emptyCells, i*len(board)+j)
+			}
+		}
+	}
+	return emptyCells
 }
