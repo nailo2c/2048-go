@@ -1,8 +1,14 @@
 package main
 
-import "github.com/nsf/termbox-go"
+import (
+	"os"
+
+	"github.com/nsf/termbox-go"
+)
 
 const boardLen = 4
+
+var gameFieldEndY = 0
 
 func main() {
 	err := termbox.Init()
@@ -45,4 +51,21 @@ func findEmptyCells(board [][]int) []int {
 		}
 	}
 	return emptyCells
+}
+
+func gameOver() {
+	printTerminal(0, gameFieldEndY, []string{"Game Over!"})
+	termbox.SetCursor(0, gameFieldEndY+1)
+	termbox.Flush()
+	os.Exit(0)
+}
+
+func printTerminal(startX, startY int, strs []string) int {
+	for y, str := range strs {
+		for x, ch := range str {
+			termbox.SetCell(startX+x, startY+y, ch, termbox.ColorDefault, termbox.ColorDefault)
+		}
+	}
+	termbox.Flush()
+	return startY + len(strs)
 }
