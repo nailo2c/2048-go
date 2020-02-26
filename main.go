@@ -12,7 +12,8 @@ import (
 
 const boardLen = 4
 
-var gameFieldEndY = 0
+var boardStartY int
+var gameFieldEndY int
 
 func main() {
 	err := termbox.Init()
@@ -24,6 +25,7 @@ func main() {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	board := initBoard(boardLen)
 	drawGameField(board)
+	startGame(board)
 }
 
 func initBoard(len int) [][]int {
@@ -37,7 +39,7 @@ func initBoard(len int) [][]int {
 func drawGameField(board [][]int) {
 	putNextNumber(board)
 	putNextNumber(board)
-	boardStartY := printTerminal(0, 0, []string{"Game 2048", ""})
+	boardStartY = printTerminal(0, 0, []string{"Game 2048", ""})
 	boardEndY := drawBoard(0, boardStartY, board)
 	gameFieldEndY = printTerminal(0, boardEndY, []string{"Esc ←↑↓→", ""})
 }
@@ -96,4 +98,71 @@ func drawBoard(startX, startY int, board [][]int) int {
 	printTerminal(0, startY, strs)
 	termbox.Flush()
 	return startY + len(strs)
+}
+
+func startGame(board [][]int) {
+	for {
+		event := termbox.PollEvent()
+		if event.Type == termbox.EventError {
+			if event.Err != nil {
+				panic(event.Err)
+			}
+		}
+		if event.Type == termbox.EventKey {
+			switch event.Key {
+			case termbox.KeyEsc:
+				termbox.SetCursor(0, gameFieldEndY)
+				termbox.Flush()
+				os.Exit(0)
+			case termbox.KeyArrowDown:
+				board = rotateBoard(board, false)
+				board = slideLeft(board)
+				board = rotateBoard(board, true)
+				checkAndRefreshBoard(board)
+			}
+		}
+	}
+}
+
+func rotateBoard(board [][]int, counterClockWise bool) [][]int {
+	rotateBoard := make([][]int, len(board))
+	for i, row := range board {
+		rotateBoard[i] = make([]int, len(row))
+		for j := range row {
+			if counterClockWise {
+				rotateBoard[i][j] = board[j][len(board)-i-1]
+			} else {
+				rotateBoard[i][j] = board[len(board)-j-1][i]
+			}
+		}
+	}
+	return rotateBoard
+}
+
+func slideLeft(board [][]int) [][]int {
+	for _, row := range board {
+		stopMerge := 0
+		for j := 1; j < len(row); j++ {
+			if row[j] != 0 {
+				for k := j; k > stopMerge; k-- {
+					if row[k-1] == 0 {
+						row[k-1] = row[k]
+						row[k] = 0
+					} else if row[k-1] == row[k] {
+						row[k-1] += row[k]
+						row[k] = 0
+						stopMerge = k
+						break
+					} else {
+						break
+					}
+				}
+			}
+		}
+	}
+	return board
+}
+
+func checkAndRefreshBoard(board [][]int) {
+	// TODO
 }
