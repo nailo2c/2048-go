@@ -71,6 +71,7 @@ func gameOver() {
 	printTerminal(0, gameFieldEndY, []string{"Game Over!"})
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
+	termbox.Close()
 	os.Exit(0)
 }
 
@@ -119,6 +120,21 @@ func startGame(board [][]int) {
 				board = slideLeft(board)
 				board = rotateBoard(board, true)
 				checkAndRefreshBoard(board)
+			case termbox.KeyArrowLeft:
+				board = slideLeft(board)
+				checkAndRefreshBoard(board)
+			case termbox.KeyArrowRight:
+				board = rotateBoard(board, true)
+				board = rotateBoard(board, true)
+				board = slideLeft(board)
+				board = rotateBoard(board, false)
+				board = rotateBoard(board, false)
+				checkAndRefreshBoard(board)
+			case termbox.KeyArrowUp:
+				board = rotateBoard(board, true)
+				board = slideLeft(board)
+				board = rotateBoard(board, false)
+				checkAndRefreshBoard(board)
 			}
 		}
 	}
@@ -164,5 +180,25 @@ func slideLeft(board [][]int) [][]int {
 }
 
 func checkAndRefreshBoard(board [][]int) {
-	// TODO
+	checkWinner(board)
+	putNextNumber(board)
+	drawBoard(0, boardStartY, board)
+}
+
+func checkWinner(board [][]int) {
+	for _, row := range board {
+		for _, cell := range row {
+			if cell == 2048 {
+				gameWin()
+			}
+		}
+	}
+}
+
+func gameWin() {
+	printTerminal(0, gameFieldEndY, []string{"You Won!"})
+	termbox.SetCursor(0, gameFieldEndY+1)
+	termbox.Flush()
+	defer termbox.Close()
+	os.Exit(0)
 }
