@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/nsf/termbox-go"
@@ -72,7 +72,7 @@ func gameOver() {
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
 	termbox.Close()
-	os.Exit(0)
+	// os.Exit(0)
 }
 
 func printTerminal(startX, startY int, strs []string) int {
@@ -90,10 +90,10 @@ func drawBoard(startX, startY int, board [][]int) int {
 	for _, row := range board {
 		var str string
 		for _, cell := range row {
-			if cell == '0' {
-				cell = '.'
-			}
 			str += fmt.Sprintf("%5d", cell)
+			if cell == 0 {
+				str = strings.Replace(str, "0", ".", -1)
+			}
 		}
 		strs = append(strs, str, "")
 	}
@@ -117,7 +117,7 @@ func startGame(board [][]int) {
 			case termbox.KeyEsc:
 				termbox.SetCursor(0, gameFieldEndY)
 				termbox.Flush()
-				os.Exit(0)
+				termbox.Close()
 			case termbox.KeyArrowDown:
 				board = rotateBoard(board, false)
 				board = slideLeft(board)
@@ -207,9 +207,9 @@ func checkWinner(board [][]int) {
 
 func gameWin() {
 	printTerminal(0, gameFieldEndY, []string{"You Won!"})
+	printTerminal(0, gameFieldEndY+1, []string{"Press Esc Key to Exit"})
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
-	os.Exit(0)
 }
 
 func copyBoard(board [][]int) [][]int {
