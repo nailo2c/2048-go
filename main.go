@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strings"
+	"reflect"
 	"time"
 
 	"github.com/nsf/termbox-go"
@@ -90,9 +90,11 @@ func drawBoard(startX, startY int, board [][]int) int {
 	for _, row := range board {
 		var str string
 		for _, cell := range row {
-			str += fmt.Sprintf("%4d", cell)
+			if cell == '0' {
+				cell = '.'
+			}
+			str += fmt.Sprintf("%5d", cell)
 		}
-		str = strings.Replace(str, "0", ".", -1)
 		strs = append(strs, str, "")
 	}
 
@@ -110,6 +112,7 @@ func startGame(board [][]int) {
 			}
 		}
 		if event.Type == termbox.EventKey {
+			prevBoard := copyBoard(board)
 			switch event.Key {
 			case termbox.KeyEsc:
 				termbox.SetCursor(0, gameFieldEndY)
@@ -119,22 +122,26 @@ func startGame(board [][]int) {
 				board = rotateBoard(board, false)
 				board = slideLeft(board)
 				board = rotateBoard(board, true)
-				checkAndRefreshBoard(board)
+				notCange := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notCange)
 			case termbox.KeyArrowLeft:
 				board = slideLeft(board)
-				checkAndRefreshBoard(board)
+				notCange := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notCange)
 			case termbox.KeyArrowRight:
 				board = rotateBoard(board, true)
 				board = rotateBoard(board, true)
 				board = slideLeft(board)
 				board = rotateBoard(board, false)
 				board = rotateBoard(board, false)
-				checkAndRefreshBoard(board)
+				notCange := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notCange)
 			case termbox.KeyArrowUp:
 				board = rotateBoard(board, true)
 				board = slideLeft(board)
 				board = rotateBoard(board, false)
-				checkAndRefreshBoard(board)
+				notCange := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notCange)
 			}
 		}
 	}
@@ -179,9 +186,11 @@ func slideLeft(board [][]int) [][]int {
 	return board
 }
 
-func checkAndRefreshBoard(board [][]int) {
+func checkAndRefreshBoard(board [][]int, boardNotChange bool) {
 	checkWinner(board)
-	putNextNumber(board)
+	if !boardNotChange {
+		putNextNumber(board)
+	}
 	drawBoard(0, boardStartY, board)
 }
 
@@ -189,6 +198,7 @@ func checkWinner(board [][]int) {
 	for _, row := range board {
 		for _, cell := range row {
 			if cell == 2048 {
+				drawBoard(0, boardStartY, board)
 				gameWin()
 			}
 		}
@@ -199,6 +209,15 @@ func gameWin() {
 	printTerminal(0, gameFieldEndY, []string{"You Won!"})
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
-	defer termbox.Close()
 	os.Exit(0)
+}
+
+func copyBoard(board [][]int) [][]int {
+	newBoard := make([][]int, len(board))
+	for i, row := range board {
+		newBoard[i] = make([]int, len(row))
+		copy(newBoard[i], row)
+	}
+
+	return newBoard
 }
