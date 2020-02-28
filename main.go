@@ -46,9 +46,6 @@ func drawGameField(board [][]int) {
 
 func putNextNumber(board [][]int) {
 	emptyCells := findEmptyCells(board)
-	if len(emptyCells) <= 0 {
-		gameOver()
-	}
 	rndSrc := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(rndSrc)
 	emptyCell := emptyCells[rnd.Intn(len(emptyCells))]
@@ -69,10 +66,9 @@ func findEmptyCells(board [][]int) []int {
 
 func gameOver() {
 	printTerminal(0, gameFieldEndY, []string{"Game Over!"})
+	printTerminal(0, gameFieldEndY+1, []string{"Press Esc Key to Exit"})
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
-	termbox.Close()
-	// os.Exit(0)
 }
 
 func printTerminal(startX, startY int, strs []string) int {
@@ -88,12 +84,13 @@ func printTerminal(startX, startY int, strs []string) int {
 func drawBoard(startX, startY int, board [][]int) int {
 	strs := []string{}
 	for _, row := range board {
-		var str string
+		var str, cStr string
 		for _, cell := range row {
-			str += fmt.Sprintf("%5d", cell)
+			cStr = fmt.Sprintf("%5d", cell)
 			if cell == 0 {
-				str = strings.Replace(str, "0", ".", -1)
+				cStr = strings.Replace(cStr, "0", ".", -1)
 			}
+			str += cStr
 		}
 		strs = append(strs, str, "")
 	}
@@ -187,22 +184,56 @@ func slideLeft(board [][]int) [][]int {
 }
 
 func checkAndRefreshBoard(board [][]int, boardNotChange bool) {
-	checkWinner(board)
+	checkWinOrLose(board)
 	if !boardNotChange {
 		putNextNumber(board)
 	}
 	drawBoard(0, boardStartY, board)
 }
 
-func checkWinner(board [][]int) {
-	for _, row := range board {
-		for _, cell := range row {
+func checkWinOrLose(board [][]int) {
+	gameOverCount := 0
+	for i, row := range board {
+		for j, cell := range row {
 			if cell == 2048 {
 				drawBoard(0, boardStartY, board)
 				gameWin()
 			}
+
+			if noPositionToMove(i, j, cell, board) {
+				gameOverCount++
+			}
 		}
 	}
+
+	if gameOverCount == boardLen*boardLen {
+		gameOver()
+	}
+}
+
+func noPositionToMove(i, j, cell int, board [][]int) bool {
+	if cell == 0 {
+		return false
+	}
+
+	// Check UP bounder & is duplicate or not
+	if i-1 >= 0 && cell == board[i-1][j] {
+		return false
+	}
+	// Check DOWN bounder & is duplicate or not
+	if i+1 < len(board) && cell == board[i+1][j] {
+		return false
+	}
+	// Check LEFT bounder & is duplicate or not
+	if j-1 >= 0 && cell == board[i][j-1] {
+		return false
+	}
+	// // Check RIGHT bounder & is duplicate or not
+	if j+1 < len(board) && cell == board[i][j+1] {
+		return false
+	}
+
+	return true
 }
 
 func gameWin() {
