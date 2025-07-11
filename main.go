@@ -114,7 +114,6 @@ func startGame(board [][]int) {
 			case termbox.KeyEsc:
 				termbox.SetCursor(0, gameFieldEndY)
 				termbox.Flush()
-				termbox.Close()
 			case termbox.KeyArrowDown:
 				board = rotateBoard(board, false)
 				board = slideLeft(board)
