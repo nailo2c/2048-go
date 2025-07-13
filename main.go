@@ -28,10 +28,10 @@ func main() {
 	startGame(board)
 }
 
-func initBoard(len int) [][]int {
-	board := make([][]int, len)
+func initBoard(size int) [][]int {
+	board := make([][]int, size)
 	for i := range board {
-		board[i] = make([]int, len)
+		board[i] = make([]int, size)
 	}
 	return board
 }
@@ -118,44 +118,44 @@ func startGame(board [][]int) {
 				board = rotateBoard(board, false)
 				board = slideLeft(board)
 				board = rotateBoard(board, true)
-				notCange := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notCange)
+				notChanged := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notChanged)
 			case termbox.KeyArrowLeft:
 				board = slideLeft(board)
-				notCange := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notCange)
+				notChanged := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notChanged)
 			case termbox.KeyArrowRight:
 				board = rotateBoard(board, true)
 				board = rotateBoard(board, true)
 				board = slideLeft(board)
 				board = rotateBoard(board, false)
 				board = rotateBoard(board, false)
-				notCange := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notCange)
+				notChanged := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notChanged)
 			case termbox.KeyArrowUp:
 				board = rotateBoard(board, true)
 				board = slideLeft(board)
 				board = rotateBoard(board, false)
-				notCange := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notCange)
+				notChanged := reflect.DeepEqual(prevBoard, board)
+				checkAndRefreshBoard(board, notChanged)
 			}
 		}
 	}
 }
 
 func rotateBoard(board [][]int, counterClockWise bool) [][]int {
-	rotateBoard := make([][]int, len(board))
+	rotatedBoard := make([][]int, len(board))
 	for i, row := range board {
-		rotateBoard[i] = make([]int, len(row))
+		rotatedBoard[i] = make([]int, len(row))
 		for j := range row {
 			if counterClockWise {
-				rotateBoard[i][j] = board[j][len(board)-i-1]
+				rotatedBoard[i][j] = board[j][len(board)-i-1]
 			} else {
-				rotateBoard[i][j] = board[len(board)-j-1][i]
+				rotatedBoard[i][j] = board[len(board)-j-1][i]
 			}
 		}
 	}
-	return rotateBoard
+	return rotatedBoard
 }
 
 func slideLeft(board [][]int) [][]int {
@@ -182,9 +182,9 @@ func slideLeft(board [][]int) [][]int {
 	return board
 }
 
-func checkAndRefreshBoard(board [][]int, boardNotChange bool) {
+func checkAndRefreshBoard(board [][]int, boardNotChanged bool) {
 	checkWinOrLose(board)
-	if !boardNotChange {
+	if !boardNotChanged {
 		putNextNumber(board)
 	}
 	drawBoard(0, boardStartY, board)
