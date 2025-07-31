@@ -22,6 +22,8 @@ func main() {
 	}
 	defer termbox.Close()
 
+	rand.Seed(time.Now().UnixNano())
+
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	board := initBoard(boardLen)
 	drawGameField(board)
@@ -46,9 +48,7 @@ func drawGameField(board [][]int) {
 
 func putNextNumber(board [][]int) {
 	emptyCells := findEmptyCells(board)
-	rndSrc := rand.NewSource(time.Now().UnixNano())
-	rnd := rand.New(rndSrc)
-	emptyCell := emptyCells[rnd.Intn(len(emptyCells))]
+	emptyCell := emptyCells[rand.Intn(len(emptyCells))]
 	board[emptyCell/len(board)][emptyCell%len(board)] = 2
 }
 
