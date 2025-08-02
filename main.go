@@ -22,6 +22,8 @@ func main() {
 	}
 	defer termbox.Close()
 
+	rand.Seed(time.Now().UnixNano())
+
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	board := initBoard(boardLen)
 	drawGameField(board)
@@ -46,9 +48,7 @@ func drawGameField(board [][]int) {
 
 func putNextNumber(board [][]int) {
 	emptyCells := findEmptyCells(board)
-	rndSrc := rand.NewSource(time.Now().UnixNano())
-	rnd := rand.New(rndSrc)
-	emptyCell := emptyCells[rnd.Intn(len(emptyCells))]
+	emptyCell := emptyCells[rand.Intn(len(emptyCells))]
 	board[emptyCell/len(board)][emptyCell%len(board)] = 2
 }
 
@@ -88,7 +88,7 @@ func drawBoard(startX, startY int, board [][]int) int {
 		for _, cell := range row {
 			cStr = fmt.Sprintf("%5d", cell)
 			if cell == 0 {
-				cStr = strings.Replace(cStr, "0", ".", -1)
+				cStr = strings.ReplaceAll(cStr, "0", ".")
 			}
 			str += cStr
 		}
@@ -114,6 +114,7 @@ func startGame(board [][]int) {
 			case termbox.KeyEsc:
 				termbox.SetCursor(0, gameFieldEndY)
 				termbox.Flush()
+				return
 			case termbox.KeyArrowDown:
 				board = rotateBoard(board, false)
 				board = slideLeft(board)
