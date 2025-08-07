@@ -88,7 +88,7 @@ func drawBoard(startX, startY int, board [][]int) int {
 		for _, cell := range row {
 			cStr = fmt.Sprintf("%5d", cell)
 			if cell == 0 {
-				cStr = strings.Replace(cStr, "0", ".", -1)
+				cStr = strings.ReplaceAll(cStr, "0", ".")
 			}
 			str += cStr
 		}
