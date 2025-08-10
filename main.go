@@ -64,11 +64,12 @@ func findEmptyCells(board [][]int) []int {
 	return emptyCells
 }
 
-func gameOver() {
+func gameOver() bool {
 	printTerminal(0, gameFieldEndY, []string{"Game Over!"})
 	printTerminal(0, gameFieldEndY+1, []string{"Press Esc Key to Exit"})
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
+	return true
 }
 
 func printTerminal(startX, startY int, strs []string) int {
@@ -101,6 +102,7 @@ func drawBoard(startX, startY int, board [][]int) int {
 }
 
 func startGame(board [][]int) {
+	gameFinished := false
 	for {
 		event := termbox.PollEvent()
 		if event.Type == termbox.EventError {
@@ -109,22 +111,26 @@ func startGame(board [][]int) {
 			}
 		}
 		if event.Type == termbox.EventKey {
-			prevBoard := copyBoard(board)
-			switch event.Key {
-			case termbox.KeyEsc:
+			if event.Key == termbox.KeyEsc {
 				termbox.SetCursor(0, gameFieldEndY)
 				termbox.Flush()
 				return
+			}
+			if gameFinished {
+				continue
+			}
+			prevBoard := copyBoard(board)
+			switch event.Key {
 			case termbox.KeyArrowDown:
 				board = rotateBoard(board, false)
 				board = slideLeft(board)
 				board = rotateBoard(board, true)
 				notChanged := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notChanged)
+				gameFinished = checkAndRefreshBoard(board, notChanged)
 			case termbox.KeyArrowLeft:
 				board = slideLeft(board)
 				notChanged := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notChanged)
+				gameFinished = checkAndRefreshBoard(board, notChanged)
 			case termbox.KeyArrowRight:
 				board = rotateBoard(board, true)
 				board = rotateBoard(board, true)
@@ -132,13 +138,13 @@ func startGame(board [][]int) {
 				board = rotateBoard(board, false)
 				board = rotateBoard(board, false)
 				notChanged := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notChanged)
+				gameFinished = checkAndRefreshBoard(board, notChanged)
 			case termbox.KeyArrowUp:
 				board = rotateBoard(board, true)
 				board = slideLeft(board)
 				board = rotateBoard(board, false)
 				notChanged := reflect.DeepEqual(prevBoard, board)
-				checkAndRefreshBoard(board, notChanged)
+				gameFinished = checkAndRefreshBoard(board, notChanged)
 			}
 		}
 	}
@@ -183,21 +189,24 @@ func slideLeft(board [][]int) [][]int {
 	return board
 }
 
-func checkAndRefreshBoard(board [][]int, boardNotChanged bool) {
-	checkWinOrLose(board)
+func checkAndRefreshBoard(board [][]int, boardNotChanged bool) bool {
+	if checkWinOrLose(board) {
+		return true
+	}
 	if !boardNotChanged {
 		putNextNumber(board)
 	}
 	drawBoard(0, boardStartY, board)
+	return false
 }
 
-func checkWinOrLose(board [][]int) {
+func checkWinOrLose(board [][]int) bool {
 	gameOverCount := 0
 	for i, row := range board {
 		for j, cell := range row {
 			if cell == 2048 {
 				drawBoard(0, boardStartY, board)
-				gameWin()
+				return gameWin()
 			}
 
 			if noPositionToMove(i, j, cell, board) {
@@ -207,8 +216,9 @@ func checkWinOrLose(board [][]int) {
 	}
 
 	if gameOverCount == boardLen*boardLen {
-		gameOver()
+		return gameOver()
 	}
+	return false
 }
 
 func noPositionToMove(i, j, cell int, board [][]int) bool {
@@ -236,11 +246,12 @@ func noPositionToMove(i, j, cell int, board [][]int) bool {
 	return true
 }
 
-func gameWin() {
+func gameWin() bool {
 	printTerminal(0, gameFieldEndY, []string{"You Won!"})
 	printTerminal(0, gameFieldEndY+1, []string{"Press Esc Key to Exit"})
 	termbox.SetCursor(0, gameFieldEndY+1)
 	termbox.Flush()
+	return true
 }
 
 func copyBoard(board [][]int) [][]int {
