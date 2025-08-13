@@ -10,7 +10,10 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-const boardLen = 4
+const (
+	boardSize = 4
+	winTarget = 2048
+)
 
 var boardStartY int
 var gameFieldEndY int
@@ -25,7 +28,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	board := initBoard(boardLen)
+	board := initBoard(boardSize)
 	drawGameField(board)
 	startGame(board)
 }
@@ -41,7 +44,7 @@ func initBoard(size int) [][]int {
 func drawGameField(board [][]int) {
 	putNextNumber(board)
 	putNextNumber(board)
-	boardStartY = printTerminal(0, 0, []string{"Game 2048", ""})
+	boardStartY = printTerminal(0, 0, []string{fmt.Sprintf("Game %d", winTarget), ""})
 	boardEndY := drawBoard(0, boardStartY, board)
 	gameFieldEndY = printTerminal(0, boardEndY, []string{"Esc ←↑↓→", ""})
 }
@@ -204,7 +207,7 @@ func checkWinOrLose(board [][]int) bool {
 	gameOverCount := 0
 	for i, row := range board {
 		for j, cell := range row {
-			if cell == 2048 {
+			if cell == winTarget {
 				drawBoard(0, boardStartY, board)
 				return gameWin()
 			}
@@ -215,7 +218,7 @@ func checkWinOrLose(board [][]int) bool {
 		}
 	}
 
-	if gameOverCount == boardLen*boardLen {
+	if gameOverCount == boardSize*boardSize {
 		return gameOver()
 	}
 	return false
