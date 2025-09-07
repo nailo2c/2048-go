@@ -105,6 +105,7 @@ func drawBoard(startX, startY int, board [][]int) int {
 }
 
 func startGame(board [][]int) {
+	gameFinished := false
 	for {
 		event := termbox.PollEvent()
 		if event.Type == termbox.EventError {
@@ -118,8 +119,10 @@ func startGame(board [][]int) {
 				termbox.Flush()
 				return
 			}
+			if gameFinished {
+				continue
+			}
 			prevBoard := copyBoard(board)
-			var gameFinished bool
 			switch event.Key {
 			case termbox.KeyArrowDown:
 				board = rotateBoard(board, false)
@@ -150,22 +153,6 @@ func startGame(board [][]int) {
 				waitForEsc()
 				return
 			}
-		}
-	}
-}
-
-func waitForEsc() {
-	for {
-		event := termbox.PollEvent()
-		if event.Type == termbox.EventError {
-			if event.Err != nil {
-				panic(event.Err)
-			}
-		}
-		if event.Type == termbox.EventKey && event.Key == termbox.KeyEsc {
-			termbox.SetCursor(0, gameFieldEndY)
-			termbox.Flush()
-			return
 		}
 	}
 }
@@ -282,4 +269,20 @@ func copyBoard(board [][]int) [][]int {
 	}
 
 	return newBoard
+}
+
+func waitForEsc() {
+	for {
+		event := termbox.PollEvent()
+		if event.Type == termbox.EventError {
+			if event.Err != nil {
+				panic(event.Err)
+			}
+		}
+		if event.Type == termbox.EventKey && event.Key == termbox.KeyEsc {
+			termbox.SetCursor(0, gameFieldEndY)
+			termbox.Flush()
+			return
+		}
+	}
 }
