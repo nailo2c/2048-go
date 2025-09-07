@@ -149,6 +149,10 @@ func startGame(board [][]int) {
 				notChanged := reflect.DeepEqual(prevBoard, board)
 				gameFinished = checkAndRefreshBoard(board, notChanged)
 			}
+			if gameFinished {
+				waitForEsc()
+				return
+			}
 		}
 	}
 }
@@ -265,4 +269,20 @@ func copyBoard(board [][]int) [][]int {
 	}
 
 	return newBoard
+}
+
+func waitForEsc() {
+	for {
+		event := termbox.PollEvent()
+		if event.Type == termbox.EventError {
+			if event.Err != nil {
+				panic(event.Err)
+			}
+		}
+		if event.Type == termbox.EventKey && event.Key == termbox.KeyEsc {
+			termbox.SetCursor(0, gameFieldEndY)
+			termbox.Flush()
+			return
+		}
+	}
 }
